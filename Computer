@@ -1,0 +1,121 @@
+"""
+Lauren Knopp
+CS 1210 Section F
+Piece Key:
+0 - empty slot
+1 - player piece
+2 - computer piece
+3 - player king
+4 - computer king
+"""
+import random
+import move_ex
+import turns
+
+computer_pieces = [2 for i in range(12)]
+player_pieces = [1 for i in range(12)]
+board = [[0, 2, 0, 2, 0, 2, 0, 2],
+         [2, 0, 2, 0, 2, 0, 0, 0],
+         [0, 2, 0, 0, 0, 2, 0, 2],
+         [1, 0, 0, 0, 2, 0, 2, 0],
+         [0, 0, 0, 1, 0, 0, 0, 0],
+         [0, 0, 1, 0, 0, 0, 1, 0],
+         [0, 1, 0, 1, 0, 1, 0, 1],
+         [1, 0, 1, 0, 1, 0, 1, 0]
+         ]
+board_copy = [[0, 2, 0, 2, 0, 2, 0, 2],
+              [0, 0, 2, 0, 2, 0, 2, 0],
+              [0, 2, 0, 2, 0, 2, 0, 2],
+              [1, 0, 1, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 2, 0, 0],
+              [1, 0, 1, 0, 0, 0, 1, 0],
+              [0, 0, 0, 1, 0, 1, 0, 1],
+              [1, 0, 1, 0, 1, 0, 1, 0]
+              ]
+    
+#produces a random computer move from available computer moves
+def random_computer_move():
+    moves = turns.turn_computer(computer_pieces)
+    return random.choice(moves)
+
+#takes a list of movement tuples and a movement tuple and returns true if present in the list, false otherwise
+def check_move(lst, tup):
+    for x in lst:
+        if tup == x:
+            return True
+    return False
+
+#takes two ints (1,3) or (2,4) and a board and counts pieces on board
+def count_pieces(num_1, num_2, board):
+    count = 0
+    for x in range(8):
+        for y in range(8):
+            if board[x][y] == num_1 or board[x][y] == num_2:
+                count += 1
+    return count
+#takes a list of avaiable computer pieces and player pieces creates a board copy, and returns the best possible move based on maximum computer pieces
+#left and minimum player pieces left. if the computer can't see a best move, or has multiple best choices, a random one is returned
+
+def minimax(board_x):
+    board_copy_1 = [[0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    ]
+    board_copy_2 = [[0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    [0 for i in range(8)],
+                    ]
+    for x in range(8):
+        for y in range(8):
+            board_copy_1[x][y] = board_x[x][y]
+            board_copy_2[x][y] = board_copy_1[x][y]
+    moves = turns.turn_computer(board_copy_1)
+    scores = [0 for i in range(len(moves))]
+    p_moves = []
+    poss_moves = []
+    maxi = -100000
+    move_select = ()
+    for x in moves:
+        if len(x) == 4:
+            move_ex.move(x, board_copy_1)
+            scores[moves.index(x)] = 0
+        if len(x) == 5:
+            move_ex.move(x, board_copy_1)
+            scores[moves.index(x)] = scores[moves.index(x)] + (x[4] * 3)
+        if len(x) == 7:
+            move_ex.move(x, board_copy_1)
+            scores[moves.index(x)] = scores[moves.index(x)] + (x[6] * 3)
+        p_moves = turns.turn_player(board_copy_1)
+        for y in p_moves:
+            if len(y) == 5:
+                scores[moves.index(x)] = scores[moves.index(x)] + y[4]/-1
+            if len(y) == 7:
+                scores[moves.index(x)] = scores[moves.index(x)] + y[6]/-1
+    for x in scores:
+        if x > maxi:
+            maxi = x
+    for y in range(len(scores)):
+        if scores[y] == maxi:
+            poss_moves.append(y)
+    move_select = moves[random.choice(poss_moves)]
+    return(move_select[0], move_select[1], move_select[2], move_select[3])
+                          
+if __name__ == "__main__":
+    print(minimax(board))
+    print(turns.turn_computer(board))
+    print(count_pieces(2, 4, board))
+    for x in board:
+        print(x)
+    print("")
+    for x in board_copy:
+        print(x)
